@@ -4,7 +4,7 @@
 #
 # Drives Phase 0→1→2→3 automatically using delivery.json as state.
 # Each Phase = one or more `claude` invocations.
-# Phase 1 iterates Story-by-Story with fresh context (Ralph pattern).
+# Phase 1 iterates Story-by-Story with fresh context per invocation.
 # NO-GO loops back to Phase 1 with new FIX Stories.
 
 set -euo pipefail
@@ -358,7 +358,7 @@ PHASE0_EOF
           continue
         fi
 
-        # [Gap 1] Algorithmic prompt — Ralph-style numbered steps
+        # Algorithmic prompt — numbered steps
         PROMPT_FILE=$(new_prompt_file)
         cat > "$PROMPT_FILE" <<STORY_EOF
 You are the ${domain}-engineer. Follow these steps exactly:

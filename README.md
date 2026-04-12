@@ -4,8 +4,6 @@
 
 An autonomous multi-agent delivery system for Claude Code. Throw in a design doc, go to sleep, wake up to a GO/NO-GO report.
 
-Inspired by [Ralph](https://github.com/snarktank/ralph)'s autonomous loop pattern, but with a full adversarial verification team instead of just typecheck + test.
-
 ## How It Works
 
 ```
@@ -16,7 +14,7 @@ Design Doc ──> delivery.sh
           PO decomposes into Stories
           You review the Story list (or --auto-approve-stories)
                   |
-          Phase 1: Implementation (Ralph-style loop)
+          Phase 1: Implementation (Story-by-Story loop)
           One Story per claude invocation (fresh context)
           TDD: test first, then implement
           Cross-domain: parallel by domain, serial within
@@ -147,19 +145,6 @@ After Phase 0, the script pauses to let you review the Story list before impleme
 | Story review gate | Pause after Phase 0 for human review (bypass with `--auto-approve-stories`) |
 | Report validation | Phase 2 → Phase 3 only if verification reports were actually produced |
 
-## Comparison with Ralph
-
-| | Ralph | Delivery Team |
-|---|---|---|
-| Loop structure | Single (Story loop) | Dual (Phase state machine + Story loop) |
-| Verification | typecheck + test | 7-agent adversarial cross-validation |
-| Failure handling | Retry same Story | findings → new FIX Stories, failCount, blocked |
-| Parallelism | Sequential only | Cross-domain parallel |
-| Stuck detection | None (burns all iterations) | Stall detection + blocked threshold |
-| Rollback | None | Git tag + reset (preserving state files) |
-| Context memory | progress.txt + AGENTS.md | progress.txt + verification reports + issue tracking |
-| Stop signal | `<promise>COMPLETE</promise>` | JSON verdict + `<signal>` fallback |
-
 ## Project Structure
 
 ```
@@ -188,10 +173,6 @@ az-delivery-team/
 - `jq` (`brew install jq` on macOS)
 - A git repository for your project
 
-## Credits
-
-- Loop pattern inspired by [Ralph](https://github.com/snarktank/ralph) by [@ryancarson](https://x.com/ryancarson), based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/)
-
 ## License
 
 MIT
@@ -201,8 +182,6 @@ MIT
 # Delivery Team (中文说明)
 
 一个基于 Claude Code 的自主多 Agent 交付系统。扔一个设计文档进去，去睡觉，醒来看 GO/NO-GO 报告。
-
-灵感来自 [Ralph](https://github.com/snarktank/ralph) 的自主循环模式，但用了完整的对抗式验证团队替代简单的 typecheck + test。
 
 ## 工作原理
 
@@ -214,7 +193,7 @@ MIT
         PO 将设计拆解为 Story 列表
         你审核 Story（或 --auto-approve-stories 跳过）
                 |
-        Phase 1: 实施（Ralph 式循环）
+        Phase 1: 实施（Story 逐个循环）
         每个 Story 一次 claude 调用（干净上下文）
         TDD：先写测试，再实现
         跨域并行，域内串行
@@ -272,6 +251,3 @@ cp -r . ~/.claude/skills/az-delivery-team/
 - **断点恢复** — 中断后重跑自动从上次 Phase 继续
 - **Git 回滚** — 每轮开始打 tag，全部 blocked 时回滚代码（保留状态文件）
 
-## 致谢
-
-循环模式灵感来自 [Ralph](https://github.com/snarktank/ralph)（[@ryancarson](https://x.com/ryancarson)），基于 [Geoffrey Huntley 的 Ralph 模式](https://ghuntley.com/ralph/)。

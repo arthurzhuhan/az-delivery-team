@@ -540,7 +540,7 @@ Skill version: **3.0** (2026-04-12)
 
 | 版本 | 日期 | 变更 |
 |------|------|------|
-| 3.0 | 2026-04-12 | 自动交付循环（delivery.sh + delivery.json）：Phase 状态机自动编排；Ralph 式 Story 粒度实施循环（fresh context per Story）；跨域并行调度；NO-GO findings 自动转化为 FIX Story；progress.txt 知识沉淀；断点恢复；不收敛检测（failCount + blocked）；手动/自动两种模式共存 |
+| 3.0 | 2026-04-12 | 自动交付循环（delivery.sh + delivery.json）：Phase 状态机自动编排；Story 粒度实施循环（fresh context per Story）；跨域并行调度；NO-GO findings 自动转化为 FIX Story；progress.txt 知识沉淀；断点恢复；不收敛检测（failCount + blocked）；手动/自动两种模式共存 |
 | 2.1 | 2026-04-11 | 迭代验证机制（所有验证 agent 支持 Issue Tracking：NEW/FIXED/STILL OPEN/REGRESSED）；项目类型适配矩阵（按类型裁剪 agent）；_context.md 拆分稳定区/动态区 + Last Updated + 维护责任；跨域协调协议（_cross-domain.md + domain-engineer 必读 + project-architect 维护） |
 | 2.0 | 2026-04-11 | 合并 e2e-evidence 入 smoke-tester；visual-qa 升级为 uiux-qa（+信息传达+UX）；acceptance-reviewer 改为纯综合判决；red-team 交叉验证扩展到全部 agent；domain-engineer 增加 TDD + self-review；全部 model 升级为 opus；新增报告目录约定；新增 Phase 0 交接检查步骤；新增版本管理 |
 | 1.0 | 初始 | 3 层 12 角色初始版本 |
