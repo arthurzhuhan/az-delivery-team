@@ -1,0 +1,63 @@
+{
+  "project": "MyProject",
+  "designDocs": ["docs/design.md"],
+  "maxRounds": 5,
+  "currentPhase": "phase0",
+  "round": 1,
+
+  "phase0": {
+    "po_ready": false,
+    "arch_ready": false
+  },
+
+  "stories": [
+    {
+      "id": "US-001",
+      "domain": "example-domain",
+      "title": "Example: Add user profile endpoint",
+      "description": "As a user, I want to view my profile so I can check my account details.",
+      "acceptanceCriteria": [
+        "GET /api/users/me returns user profile with name, email, avatar",
+        "Unauthenticated request returns 401",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "source": "prd",
+      "failCount": 0,
+      "blocked": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "domain": "example-domain",
+      "title": "Example: Display profile page",
+      "description": "As a user, I want a profile page showing my account information.",
+      "acceptanceCriteria": [
+        "Profile page renders user name, email, and avatar",
+        "Loading state shown while fetching",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 2,
+      "passes": false,
+      "source": "prd",
+      "failCount": 0,
+      "blocked": false,
+      "notes": ""
+    }
+  ],
+
+  "verification": {
+    "reports": {
+      "smoke-tester": null,
+      "api-tester": null,
+      "security-auditor": null,
+      "red-team": null,
+      "uiux-qa": null,
+      "performance-auditor": null,
+      "launch-readiness": null
+    },
+    "verdict": null
+  }
+}
