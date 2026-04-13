@@ -46,6 +46,25 @@ For each category, scan code and test:
 - [ ] CORS configuration is restrictive (not `*`)
 - [ ] Directory listing is disabled
 
+**A01-RBAC — Role-Based Access Control (MANDATORY):**
+
+Build and verify a complete role-route matrix:
+
+1. **Inventory all roles** defined in the system (DB schema, enums, middleware)
+2. **Inventory all protected routes** (middleware matchers, API handlers with auth checks)
+3. **Build the matrix**: For each protected route × each role, document expected behavior (200/403/redirect)
+4. **Verify middleware**: Read middleware code — confirm it checks ROLE, not just authentication
+5. **Verify UI conditional rendering**: Header menus, sidebar navigation, action buttons must differ by role
+6. **Cross-role attack test**: For each role-restricted route, confirm a lower-privilege role gets rejected
+
+| Route Pattern | Required Role | USER gets | PROVIDER gets | ADMIN gets |
+|---------------|---------------|-----------|---------------|------------|
+| /user/*       | any auth      | 200       | 200           | 200        |
+| /provider/*   | PROVIDER+     | **403**   | 200           | 200        |
+| /admin/*      | ADMIN         | **403**   | **403**       | 200        |
+
+Report any route where middleware only checks `isAuthenticated` but not role — this is a **CRITICAL** finding.
+
 **A02 — Cryptographic Failures:**
 - [ ] Passwords are hashed (bcrypt/argon2), not encrypted or plain
 - [ ] No sensitive data in URLs (tokens, passwords in query params)

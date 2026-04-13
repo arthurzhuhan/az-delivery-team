@@ -49,6 +49,14 @@ Try to break the system with:
 - Missing or corrupted localStorage/cookies
 - API returning unexpected shapes (extra fields, missing fields, null)
 
+**Authorization / privilege escalation attacks (MANDATORY):**
+- Access /provider/* routes as USER role — must get 403/redirect
+- Access /admin/* routes as PROVIDER role — must get 403/redirect
+- Call role-restricted API endpoints with wrong role session
+- Check if UI (header menus, sidebar, buttons) leaks routes the role shouldn't see
+- Read middleware code: does it check ROLE, or just isAuthenticated?
+- Try modifying another user's resources (IDOR with role twist)
+
 **Infrastructure attacks:**
 - What if the database is slow? (add artificial latency)
 - What if an external service returns 500?

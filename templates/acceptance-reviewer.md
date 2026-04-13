@@ -178,13 +178,14 @@ Save the report to `.claude/reports/acceptance-review.md`.
 
 ## Decision Criteria
 
-- **🟢 GO**: All core flows PASS with evidence. No blocking issues across any dimension. Security has no critical findings.
-- **🟡 CONDITIONAL GO**: Core flows work but with notable issues. Acceptable for soft launch / internal testing. All security criticals resolved.
-- **🔴 NO-GO**: Any core flow FAIL. Or security/red-team found critical exploitable issues. Or 3+ verification reports are missing (insufficient evidence to judge).
+- **🟢 GO**: All core flows PASS with evidence. No blocking issues across any dimension. Security has no critical findings. RBAC matrix fully verified.
+- **🟡 CONDITIONAL GO**: Core flows work but with notable issues. Acceptable for soft launch / internal testing. All security criticals resolved. RBAC matrix verified for critical routes.
+- **🔴 NO-GO**: Any core flow FAIL. Or security/red-team found critical exploitable issues. Or RBAC matrix shows role-restricted routes accessible by wrong roles. Or 3+ verification reports are missing (insufficient evidence to judge).
 
 ## Critical Rules
 
 1. **One broken core flow = NO-GO.** Non-negotiable.
+1b. **Missing RBAC matrix = NO-GO.** If the security-auditor report does not contain a completed role-route matrix, there is insufficient evidence to judge authorization. This is non-negotiable.
 2. **Read ALL reports.** Your value is the cross-cutting view. If you only read 3 of 7 reports, you're not doing your job.
 3. **Arbitrate conflicts explicitly.** Don't ignore disagreements between agents. State who you agree with and why.
 4. **Be specific.** "UX needs work" is not feedback. "Search input causes page jump on every keystroke" is.

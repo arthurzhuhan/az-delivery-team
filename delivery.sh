@@ -298,7 +298,7 @@ Step 5: Read ${STATE_FILE} and confirm both phase0.po_ready and phase0.arch_read
 Step 6: Verify that ALL stories use only allowed domains (${ALLOWED_DOMAINS}). If any story has a domain not in this list, fix it before proceeding.
 Step 7: Report the final readiness status and number of stories created.
 PHASE0_EOF
-      claude -p "$(cat "$PROMPT_FILE")" || true
+      claude -p --disable-slash-commands "$(cat "$PROMPT_FILE")" || true
       rm -f "$PROMPT_FILE"
 
       # Check gate
@@ -442,7 +442,7 @@ STORY_EOF
 
         # Run and capture output for fallback signal check [Gap 2]
         OUTPUT=""
-        if OUTPUT=$(claude -p "$(cat "$PROMPT_FILE")" 2>&1 | tee /dev/stderr); then
+        if OUTPUT=$(claude -p --disable-slash-commands "$(cat "$PROMPT_FILE")" 2>&1 | tee /dev/stderr); then
           echo "[Phase 1] ✅ $story_id — claude exited successfully"
         else
           echo "[Phase 1] ⚠️ $story_id — claude exited with error"
@@ -519,7 +519,7 @@ Step 3: After all 7 complete, read each report and extract the overall status (P
 Step 4: Update ${STATE_FILE}: set verification.reports.<agent-name> to PASS or FAIL for each.
 Step 5: Reply with: <signal>VERIFICATION_DONE</signal>
 PHASE2_EOF
-      claude -p "$(cat "$PROMPT_FILE")" || true
+      claude -p --disable-slash-commands "$(cat "$PROMPT_FILE")" || true
       rm -f "$PROMPT_FILE"
 
       # Validate: at least some reports were produced
