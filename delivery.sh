@@ -23,7 +23,18 @@ cleanup() {
   rm -f "${STATE_FILE}.tmp."* 2>/dev/null || true
   rm -f "${STATE_FILE}.pre-rollback" "${PROGRESS_FILE}.pre-rollback" 2>/dev/null || true
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+
+# ─── Handle Ctrl+C gracefully ───
+INTERRUPTED=false
+handle_interrupt() {
+  echo ""
+  echo "[Delivery] Ctrl+C received. Stopping after current operation..."
+  INTERRUPTED=true
+  # Kill child processes in our process group
+  kill -- -$$ 2>/dev/null || true
+}
+trap handle_interrupt INT TERM
 
 # ─── Parse arguments ───
 MAX_ROUNDS=""
@@ -212,6 +223,12 @@ echo ""
 PHASE1_STALL_COUNT=0
 
 while true; do
+  if [ "$INTERRUPTED" = true ]; then
+    echo ""
+    echo "⏸️  Paused. Run ./delivery.sh to resume from current state."
+    exit 0
+  fi
+
   PHASE=$(read_phase)
   ROUND=$(read_round)
 
@@ -365,6 +382,7 @@ PHASE0_EOF
       FAILED_STORIES=()
       while IFS='|' read -r domain story_id title; do
         [ -z "$domain" ] && continue
+        [ "$INTERRUPTED" = true ] && break
         echo ""
         echo "[Phase 1] ── $domain-engineer → $story_id: $title ──"
 
