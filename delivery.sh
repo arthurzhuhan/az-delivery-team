@@ -4,7 +4,7 @@
 #
 # Drives Phase 0→1→2→3 automatically using delivery.json as state.
 # Each Phase = one or more `claude` invocations.
-# Phase 1 iterates Story-by-Story with fresh context (Ralph pattern).
+# Phase 1 iterates Story-by-Story with fresh context per invocation.
 # NO-GO loops back to Phase 1 with new FIX Stories.
 
 set -euo pipefail
@@ -138,6 +138,7 @@ get_next_stories_by_domain() {
     [.stories[] | select(.passes == false and .blocked == false)]
     | group_by(.domain)
     | map(sort_by(.priority) | first)
+    | sort_by(.priority)
     | .[]
     | "\(.domain)|\(.id)|\(.title)"
   ' "$STATE_FILE"
@@ -235,6 +236,18 @@ while true; do
 
       DESIGN_DOCS=$(jq -r '.designDocs | join(", ")' "$STATE_FILE")
 
+      # Extract allowed domains from _context.md domain table
+      ALLOWED_DOMAINS=""
+      if [ -f "${AGENTS_DIR}/_context.md" ]; then
+        # Find domain-engineer files to determine valid domains
+        ALLOWED_DOMAINS=$(ls "${AGENTS_DIR}"/*-engineer.md 2>/dev/null | sed 's|.*/||; s|-engineer\.md||' | tr '\n' ', ' | sed 's/,$//')
+      fi
+      if [ -z "$ALLOWED_DOMAINS" ]; then
+        echo "[Phase 0] ⚠️ No domain-engineer files found in ${AGENTS_DIR}/. Story decomposition may use incorrect domains."
+      else
+        echo "[Phase 0] Allowed domains: ${ALLOWED_DOMAINS}"
+      fi
+
       # [Gap 1] Algorithmic prompt
       PROMPT_FILE=$(new_prompt_file)
       cat > "$PROMPT_FILE" <<PHASE0_EOF
@@ -242,7 +255,8 @@ You are the delivery orchestrator. Follow these steps exactly:
 
 Step 1: Read ${AGENTS_DIR}/product-owner.md and ${AGENTS_DIR}/project-architect.md to understand their roles.
 Step 2: Read the design documents: ${DESIGN_DOCS}
-Step 3: Use the Agent tool to run BOTH agents in parallel:
+Step 3: Read ${AGENTS_DIR}/_context.md to understand the project's domain split.
+Step 4: Use the Agent tool to run BOTH agents in parallel:
 
   Agent A — Product Owner:
     a1. Perform Phase 0 Readiness Check (from its instructions) against the design documents
@@ -253,6 +267,9 @@ Step 3: Use the Agent tool to run BOTH agents in parallel:
         - Order: schema/migration (priority 1-N) -> backend/API -> frontend/UI
         - Every Story must include "Typecheck passes" in acceptanceCriteria
         - UI Stories must also include "Verify in browser"
+        - CRITICAL DOMAIN CONSTRAINT: Every Story's "domain" field MUST be one of these exact values: ${ALLOWED_DOMAINS}
+          These are the ONLY domains that have engineer agents. Stories assigned to any other domain will be SKIPPED.
+          Map features to these domains based on the domain ownership table in ${AGENTS_DIR}/_context.md.
     a4. Update ${STATE_FILE}: set phase0.po_ready = true if READY, false if NOT READY
 
   Agent B — Project Architect:
@@ -260,8 +277,9 @@ Step 3: Use the Agent tool to run BOTH agents in parallel:
     b2. Save Readiness Report to ${REPORTS_DIR}/project-architect-readiness.md
     b3. Update ${STATE_FILE}: set phase0.arch_ready = true if READY, false if NOT READY
 
-Step 4: Read ${STATE_FILE} and confirm both phase0.po_ready and phase0.arch_ready are set.
-Step 5: Report the final readiness status and number of stories created.
+Step 5: Read ${STATE_FILE} and confirm both phase0.po_ready and phase0.arch_ready are set.
+Step 6: Verify that ALL stories use only allowed domains (${ALLOWED_DOMAINS}). If any story has a domain not in this list, fix it before proceeding.
+Step 7: Report the final readiness status and number of stories created.
 PHASE0_EOF
       claude -p "$(cat "$PROMPT_FILE")" || true
       rm -f "$PROMPT_FILE"
@@ -358,7 +376,7 @@ PHASE0_EOF
           continue
         fi
 
-        # [Gap 1] Algorithmic prompt — Ralph-style numbered steps
+        # [Gap 1] Algorithmic prompt — numbered steps
         PROMPT_FILE=$(new_prompt_file)
         cat > "$PROMPT_FILE" <<STORY_EOF
 You are the ${domain}-engineer. Follow these steps exactly:
@@ -372,13 +390,18 @@ Step 5: Read the Story below and plan your approach (break into vertical slices 
 ## Your Story
 ${STORY_JSON}
 
-Step 6: Implement via TDD:
-  6a. Write a failing test for the first acceptance criterion
-  6b. Run the test — confirm it FAILS
-  6c. Write minimal code to make the test pass
-  6d. Run the test — confirm it PASSES
-  6e. Repeat 6a-6d for remaining acceptance criteria
-  6f. Refactor if needed (keep tests green)
+Step 6: Implement the Story.
+  If this is a bootstrap/scaffolding story (project init, dependency setup, config files):
+    6a. Create the project structure, config files, and install dependencies first
+    6b. Then write verification tests that confirm the setup works
+    6c. Run the tests — confirm they PASS
+  Otherwise, use TDD:
+    6a. Write a failing test for the first acceptance criterion
+    6b. Run the test — confirm it FAILS
+    6c. Write minimal code to make the test pass
+    6d. Run the test — confirm it PASSES
+    6e. Repeat 6a-6d for remaining acceptance criteria
+    6f. Refactor if needed (keep tests green)
 Step 7: Run the full typecheck and test suite
 Step 8: If Step 7 passes:
   8a. Commit all changes: git commit -m "feat: ${story_id} - ${title}"
